@@ -1,13 +1,7 @@
-cd "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\data\V2\"
-
-/*
-- famid_y02_2022a
-- famid_y02_2022a_V2: V1: is_noA4S & ipr_type =="PI"  & inrange(app_year,1990, 2019)
-- famid_y02_2022a_V3: V2+ is_ctry_select: excluding patent offices and countries lacking data: only 134 countries left. 
-*/
+cd "./Jiang_Mechane/data/"
 
 *#####################################################
-*           Version 4
+*           Do file1: Methane identification
 *#####################################################
 
 * Date: August 31, 2023
@@ -44,7 +38,6 @@ replace tec_subid =152 if cpc=="Y02P  90/90"|cpc=="Y02P  90/95"
 
 gen is_A4S= (regexm(cpc,"Y02A"))
 gen is_noA4S=(is_A4S==0)
-* V2 note: a tec both Y02A and not Y02A 
 drop is_A4S
 compress
 save,replace 
@@ -52,11 +45,8 @@ save,replace
 count if cpc=="Y02C  20/20" //1858 
 count if regexm(cpc,"Y02E") //1,705,256 
 
-* Miss1: cpc=="Y02C  20/20" belongs to A and not A 
-* Miss2: "Y02E  20/12" and with biomass, "Y02  E20/30" and with biomass
-// import delimited "ch4_famid_cpc_miss_2022a.csv", clear 
 import delimited "ch4_famid_miss_2022a_v2.csv", clear
-// replace tec_subid=114 if tec_subid ==113
+
 drop cpc 
 gduplicates drop
 gsort famid_docdb
@@ -95,7 +85,7 @@ gen is_methan=(tec_subid!=.)
 compress 
 save famid_y02_2022a,replace 
 
-import excel "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\code\CH4_search.xlsx", sheet("Sheet1") firstrow clear
+import excel "CH4_search.xlsx", sheet("Sheet1") firstrow clear
 drop tec_ipc 
 drop if tec_id==.
 replace tec_sub=proper(tec_sub)
@@ -156,20 +146,12 @@ format %49s titabst
 
 *###############################
 * Step1: Excluding false positive 
-* Reclassifying to livestock 
-// gdistinct famid_docdb if regexm(cpc,"Y02C  20/20")
-//1,978  1,078
-
 replace tec_subid= 114 if (regexm(titabst, "livestock")|regexm(titabst, "poultry")|regexm(titabst, "animal")|regexm(titabst, "husbandry")|regexm(titabst, "farm")|regexm(titabst, "manure")|regexm(titabst, "enteric")|regexm(titabst, "fermentat")|regexm(titabst, "rumen")|regexm(titabst, "ruminant")|regexm(titabst, "rumination")|regexm(titabst, "regurgitation")|regexm(titabst, "fowl")|regexm(titabst, "breeding")|regexm(titabst, "forag")|regexm(titabst, "cattle")|regexm(titabst, "beef")|regexm(titabst, "cow")|regexm(titabst, "bestial")|regexm(titabst, "goat")|regexm(titabst, "sheep")|regexm(titabst, "pig")|regexm(titabst, "chicken")|regexm(titabst, "horse")|regexm(titabst, "buck")|regexm(titabst, "goose")|regexm(titabst, "faec")|regexm(titabst, "excrement")|regexm(titabst, "excreta")) & regexm(cpc,"Y02C  20/20")
-
-* Reclassifying to Biomass   Abandoned
-// replace tec_subid= 142 if (regexm(titabst, "biomass")|regexm(titabst, "crop")|regexm(titabst, "straw")|regexm(titabst, "farm plant")) & regexm(cpc,"Y02C  20/20")
-
 
 *###############################
 * Step2: Reclassification  
 replace tec_subid= 1311 if ((regexm(titabst,"coal") & (regexm(titabst,"mine")| regexm(titabst,"well")|regexm(titabst,"dress")))| regexm(titabst,"cmm")) & tec_subid==131
-// "coal mine", "coal well", "coalbed methane", "coal mine methane", "CMM", "coal mine and low-concentration gas", "coal mine and ventilation gas", "coal min", "coal dress")
+
 
 replace tec_subid= 1312 if ((regexm(titabst,"pneumatic device")|regexm(titabst,"pneumatic controller")|regexm(titabst,"pneumatic pump")|regexm(titabst,"electrical pump")|regexm(titabst, "valve")|regexm(titabst,"compressor seal")|regexm(titabst,"valve rod")|regexm(titabst, "electric motor")|regexm(titabst, "instrument air system")) & (regexm(titabst,"oil" )|regexm(titabst,"gas"))) & tec_subid==131
 
@@ -178,12 +160,10 @@ replace tec_subid= 1312 if (regexm(titabst,"vapour recovery unit")|regexm(titabs
 replace tec_subid= 1313 if ((regexm(titabst,"leak detection")|regexm(titabst,"ldar")|regexm(titabst, "infrared camera")|regexm(titabst,  "monitoring")|regexm(titabst, "detecting")|regexm(titabst, "sensor")) & (regexm(titabst,"oil")|regexm(titabst,"gas"))) & tec_subid==131  
 
 replace tec_subid= 1314 if (regexm(titabst,"methane-reducing catalyst")|regexm(titabst,"methane reducing catalyst")|regexm(titabst,  "microturbine")|regexm(titabst,  "pipeline pump")|regexm(titabst,  "green completion")) & tec_subid==131
-* pipeline pump-down? pipeline pump? 
 
 replace tec_subid=153 if tec_subid==131 
 
 replace tec_subid= 1321 if ((regexm(titabst,"coal") & (regexm(titabst,"mine")| regexm(titabst,"well")|regexm(titabst,"dress")))| regexm(titabst,"cmm")) & tec_subid==132
-// "coal mine", "coal well", "coalbed methane", "coal mine methane", "CMM", "coal mine and low-concentration gas", "coal mine and ventilation gas", "coal min", "coal dress")
 
 replace tec_subid= 1322 if ((regexm(titabst,"pneumatic device")|regexm(titabst,"pneumatic controller")|regexm(titabst,"pneumatic pump")|regexm(titabst,"electrical pump")|regexm(titabst, "valve")|regexm(titabst,"compressor seal")|regexm(titabst,"valve rod")|regexm(titabst, "electric motor")|regexm(titabst, "instrument air system")) & (regexm(titabst,"oil" )|regexm(titabst,"gas"))) & tec_subid==132
 
@@ -215,7 +195,6 @@ replace tec_id=15 if tec_subid==153
 replace tec_sub=19 if tec_subid==153
 
 gdistinct famid_docdb if tec_subid==153
-
 
 compress 
 save fossil,replace 
@@ -257,7 +236,6 @@ merge m:1 famid_docdb cpc using temp1,nogen
 merge m:1 tec_subid using ch4_tec_labels,nogen 
 drop if famid_docdb==.
 tab tec_sub,sort 
-// ed if tec_sub==14| tec_sub==12
 gdistinct famid_docdb
 compress 
 save temp1,replace 
@@ -274,6 +252,7 @@ gduplicates drop
 tab tec_sub,sort
 gdistinct famid_docdb
 
+**# Bookmark #1
 * update is_methan 
 cap drop is_methan 
 gen is_methan=(tec_subid!=.)
@@ -293,65 +272,12 @@ replace ctry_code="GB" if ctry_code=="UK"
 replace ctry_code="VG" if ctry_code=="VI"
 replace ctry_code="TR" if ctry_code=="TK"
 
-merge m:1 ctry_code using "F:\Dropbox\Github\Novelty_Patent\data\sc_patstat\2022a\pat_ctrycode.dta",keep(1 3)keepusing(isnot_ctry iso_alph3 st3_name)
+merge m:1 ctry_code using "pat_ctrycode.dta",keep(1 3)keepusing(isnot_ctry iso_alph3 st3_name)
 gen is_ctry_select=(_mer==3 & isnot_ctry==0)
 drop _mer isnot_ctry 
 
 compress 
 save famid_y02_2022a,replace 
-
-*Note: There are 134 selected countries 
-gdistinct ctry_code if tec_subid!=. & is_noA4S & ipr_type =="PI" & inrange(app_year,1990, 2019)  & is_ctry_select
-
-
-
-*#################################
-*     Statistics 
-*#################################
-
-* Step 2: SQL: Y02C  20/20 
-
-* Step 3: 
-* Step 3.1: 
-* Step 3.2: fossil: Y02E + Keywords 
-
-*####################################################
-* Selection process 
-
-/*
-use famid_y02_2022a,clear 
-keep if is_noA4S & ipr_type=="PI"
-keep if inrange(app_year,1990, 2019)
-keep famid_docdb tec* app_year fam_size is_methan
-gduplicates drop 
-
-gdistinct famid_docdb if is_methan
-
-* 去重处理 
-bysort famid_docdb : gen x1=_N
-gen x2=(tec !=.)
-bysort famid_docdb: gegen x3=max(x2)
-drop if tec==. & x1>=2 & x3==1
-drop x*
-bysort famid_docdb : gen dup=_N
-tab dup
-gsort famid_docdb 
-
-compress 
-save famid_y02_2022a_V2,replace 
-
-
-count if app_auth=="WO"|app_auth=="EP"
-count if ctry_code=="WO"|ctry_code=="EP"
-
-gdistinct famid_docdb if is_methan & app_auth=="WO"
-gdistinct famid_docdb if is_methan & fam_size >1 
-gdistinct famid_docdb if tec!=. & fam_size >1  & app_year==2019 
-gdistinct famid_docdb if is_methan & fam_size >1  & app_year==2018
-
-gdistinct famid_docdb if is_methan & fam_size >1  & app_year==2019 & app_auth!="WO"&  app_auth!="EP"   
-gdistinct famid_docdb if is_methan & fam_size >1  & app_year==2019 & (ctry_code!="WO" &ctry_code!="EP") 
-*/
 
 
 *####################################################
@@ -435,8 +361,6 @@ export delimited using "ch4_base_famid_cpc.csv", replace
 *####################################################
 
 *##########################################
-cap rm "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\indicator\stats_methane_V2.xlsx"
-
 * All applications 
 use famid_y02_2022a_V2,clear 
 keep famid_docdb app_year is_hq 
@@ -446,7 +370,7 @@ reshape wide patQ,i(app_year)j(is_hq)
 gen pat_tot=patQ0+patQ1
 gen hq_share=patQ1/pat_tot*100 
 ren (patQ0 patQ1)(patQ_nohq patQ_hq)
-export excel using "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\indicator\stats_methane_V2.xlsx",sheet("allpatQ") firstrow(variables)
+export excel using "..\indicator\stats_methane_V2.xlsx",sheet("allpatQ") firstrow(variables)
 
 
 *##################################
@@ -464,7 +388,7 @@ gen hq_share_frac=patQ_frac1/pat_totQ_frac*100
 drop patQ0 patQ_frac0
 ren (patQ1 patQ_frac1)(patQ_hq patQ_hq_frac)
 order app_year pat_totQ patQ_hq hq_share pat_totQ_frac patQ_hq_frac 
-export excel using "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\indicator\stats_methane_V2.xlsx", sheet("1ch4_year") sheetmodify firstrow(variables)
+export excel using "..\indicator\stats_methane_V2.xlsx", sheet("1ch4_year") sheetmodify firstrow(variables)
 
 
 use famid_y02_2022a_V2,clear 
@@ -481,7 +405,7 @@ drop patQ0 patQ_frac0
 ren (patQ1 patQ_frac1)(patQ_hq patQ_hq_frac)
 order app_year tec pat_totQ patQ_hq hq_share pat_totQ_frac patQ_hq_frac 
 gsort app_year tec 
-export excel using "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\indicator\stats_methane_V2.xlsx", sheet("2ch4_tec") sheetmodify firstrow(variables)
+export excel using "..\indicator\stats_methane_V2.xlsx", sheet("2ch4_tec") sheetmodify firstrow(variables)
 
 
 use famid_y02_2022a_V2,clear 
@@ -498,7 +422,7 @@ drop patQ0 patQ_frac0
 ren (patQ1 patQ_frac1)(patQ_hq patQ_hq_frac)
 order app_year tec tec_sub pat_totQ patQ_hq hq_share pat_totQ_frac patQ_hq_frac 
 gsort app_year tec_sub 
-export excel using "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\indicator\stats_methane_V2.xlsx", sheet("3ch4_tecsub") sheetmodify firstrow(variables)
+export excel using "..\indicator\stats_methane_V2.xlsx", sheet("3ch4_tecsub") sheetmodify firstrow(variables)
 
 
 use famid_y02_2022a_V2,clear 
@@ -506,7 +430,7 @@ keep if is_methan
 keep famid_docdb app_year ctry_code
 gduplicates drop 
 gcollapse (count)patQ=famid_docdb,by(app_year ctry_code)
-export excel using "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\indicator\stats_methane_V2.xlsx", sheet("4ch4_ctry") sheetmodify firstrow(variables)
+export excel using "../indicator/stats_methane_V2.xlsx", sheet("4ch4_ctry") sheetmodify firstrow(variables)
 
 *##########################################
 * Granted only 
@@ -520,7 +444,7 @@ reshape wide patQ,i(app_year)j(is_hq)
 gen pat_tot=patQ0+patQ1
 gen hq_share=patQ1/pat_tot*100 
 ren (patQ0 patQ1)(patQ_nohq patQ_hq)
-export excel using "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\indicator\stats_methane_V2.xlsx",sheet("granted_allpatQ")sheetmodify firstrow(variables)
+export excel using "..\indicator\stats_methane_V2.xlsx",sheet("granted_allpatQ")sheetmodify firstrow(variables)
 
 *##################################
 * Methane only
@@ -537,7 +461,7 @@ gen hq_share_frac=patQ_frac1/pat_totQ_frac*100
 drop patQ0 patQ_frac0
 ren (patQ1 patQ_frac1)(patQ_hq patQ_hq_frac)
 order app_year pat_totQ patQ_hq hq_share pat_totQ_frac patQ_hq_frac 
-export excel using "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\indicator\stats_methane_V2.xlsx", sheet("granted_1ch4_year") sheetmodify firstrow(variables)
+export excel using "..\indicator\stats_methane_V2.xlsx", sheet("granted_1ch4_year") sheetmodify firstrow(variables)
 
 
 use famid_y02_2022a_V2,clear 
@@ -554,7 +478,7 @@ drop patQ0 patQ_frac0
 ren (patQ1 patQ_frac1)(patQ_hq patQ_hq_frac)
 order app_year tec pat_totQ patQ_hq hq_share pat_totQ_frac patQ_hq_frac 
 gsort app_year tec 
-export excel using "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\indicator\stats_methane_V2.xlsx", sheet("granted_2ch4_tec") sheetmodify firstrow(variables)
+export excel using "..\indicator\stats_methane_V2.xlsx", sheet("granted_2ch4_tec") sheetmodify firstrow(variables)
 
 
 use famid_y02_2022a_V2,clear 
@@ -571,7 +495,7 @@ drop patQ0 patQ_frac0
 ren (patQ1 patQ_frac1)(patQ_hq patQ_hq_frac)
 order app_year tec tec_sub pat_totQ patQ_hq hq_share pat_totQ_frac patQ_hq_frac 
 gsort app_year tec_sub 
-export excel using "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\indicator\stats_methane_V2.xlsx", sheet("granted_3ch4_tecsub") sheetmodify firstrow(variables)
+export excel using "..\indicator\stats_methane_V2.xlsx", sheet("granted_3ch4_tecsub") sheetmodify firstrow(variables)
 
 
 use famid_y02_2022a_V2,clear 
@@ -579,51 +503,10 @@ keep if is_grant & is_methan
 keep famid_docdb app_year ctry_code  
 gduplicates drop 
 gcollapse (count)patQ=famid_docdb,by(app_year ctry_code)
-export excel using "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\indicator\stats_methane_V2.xlsx", sheet("granted_4ch4_ctry") sheetmodify firstrow(variables)
+export excel using "..\indicator\stats_methane_V2.xlsx", sheet("granted_4ch4_ctry") sheetmodify firstrow(variables)
 
-shellout "F:\Dropbox\Yin-Collab\Jiang_Yin\Jiang_Mechane\indicator\stats_methane_V2.xlsx"
+shellout "..\indicator\stats_methane_V2.xlsx"
 
-
-
-*############################################
-*    Robust check: forward citation 
-*############################################
-
-
-// count if app_auth=="WO"|app_auth=="EP"
-// count if is_methan & (app_auth=="WO"|app_auth=="EP")   
-// count if is_methan & (ctry_code=="WO"|ctry_code=="EP")
-// drop if app_auth=="WO"|app_auth=="EP" 
-// drop if ctry_code=="WO"|ctry_code=="EP"
-
-//keep famid_docdb tec app_year is_methan
-gduplicates drop 
-format %25.0g tec
-
-bysort famid_docdb : gen x1=_N
-gen x2=(tec !=.)
-bysort famid_docdb: gegen x3=max(x2)
-drop if tec==. & x1>=2 & x3==1
-drop x*
-bysort famid_docdb : gen dup=_N
-tab dup
-compress 
-
-
-
-gen year_dmy="2005-2010" if  app_year>=2005 & app_year <=2010
-replace year_dmy ="2011-2016" if app_year>=2011 & app_year <=2016
-replace year_dmy ="2017-2019" if app_year>=2017 & app_year <=2019
-replace year_dmy ="1980-2004" if app_year>=1980 & app_year <=2004
-keep if year_dmy !="" 
-
-drop app_year dup 
-gduplicates drop 
-
-gcollapse (count)patQ=famid_docdb,by(year_dmy tec is_methan)
-gsort is_methan year_dmy 
-
- 
 
 
 
