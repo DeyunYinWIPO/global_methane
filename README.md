@@ -2,7 +2,7 @@
 This code is for paper [Global trend of methane abatement inventions and widening mismatch with methane emissions](https://www.nature.com/articles/s41558-024-01947-x)
 
 - **Short Introduction in Nature Briefing**: [Trends in the global invention and international diffusion of methane abatement technologies](https://www.nature.com/articles/s41558-024-01948-w)
-- 
+
 - **Authors:** Jingjing Jiang, Deyun Yin, Zhuoluo Sun, Bin Ye, Nan Zhou
 
 - **Title:** Global trend of methane abatement inventions and widening mismatch with methane emissions
